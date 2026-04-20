@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Folders
-dCom/bin/
-dCom/obj/
+dCom/bin/Debug/
+dCom/obj/Debug/
