@@ -1,9 +1,8 @@
 STA 73
 TCP 33131
 
-IN_REG  1 400  0  0   4095  0  AI  @L  # L
-DO_REG  1 1500   0  0      1     0  DO  @STOP # STOP
-DO_REG  1 1502   0  0      1     0  DO  @VentilV1 # Ventil V1
-DO_REG  1 1505   0  0      1     0  DO  @P1 # P1
-DO_REG  1 1506   0  0      1     0  DO  @P2 # P2
-HR_INT  1 2300  0  0   4095  0  AO  @N1 # N1
+DO_REG	1 1500	0  0	  1     0  DO  @DigOutSTOP 2
+DO_REG	1 1502	0  0	  1     0  DO  @DigOutVentil 2
+DO_REG	2 1505	0  0	  1     0  DO  @DigOutPrekidac 2
+IN_REG  1 400	0  0   4095  2000  AI  @AnaIn  4
+HR_INT  1 2300  0  0   4095  1200  AO  @AnaOut 4
