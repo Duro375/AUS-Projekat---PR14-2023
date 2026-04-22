@@ -24,44 +24,39 @@ namespace Modbus.ModbusFunctions
         /// <inheritdoc />
         public override byte[] PackRequest()
         {
+            ModbusWriteCommandParameters writeParams = CommandParameters as ModbusWriteCommandParameters;
             byte[] ret_val = new byte[12];
-
-            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)CommandParameters.TransactionId)), 0, ret_val, 0, 12); //Changes possible
-            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)CommandParameters.ProtocolId)), 0, ret_val, 2, 4); //Changes possible
-            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)CommandParameters.Length)), 0, ret_val, 4, 2);
-
-            ret_val[6] = CommandParameters.UnitId;
-            ret_val[7] = CommandParameters.FunctionCode;
-
-            /*Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)((ModbusWriteCommandParameters)CommandParameters);
-            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)((ModbusWriteCommandParameters)CommandParameters);*/
-
-            //Changes needed
-
+            ret_val[1] = (byte)(writeParams.TransactionId);
+            ret_val[0] = (byte)(writeParams.TransactionId >> 8);
+            ret_val[3] = (byte)(writeParams.ProtocolId);
+            ret_val[2] = (byte)(writeParams.ProtocolId >> 8);
+            ret_val[5] = (byte)(writeParams.Length);
+            ret_val[4] = (byte)(writeParams.Length >> 8);
+            ret_val[6] = writeParams.UnitId;
+            ret_val[7] = writeParams.FunctionCode;
+            ret_val[9] = (byte)(writeParams.OutputAddress);
+            ret_val[8] = (byte)(writeParams.OutputAddress >> 8);
+            ret_val[11] = (byte)(writeParams.Value);
+            ret_val[10] = (byte)(writeParams.Value >> 8);
             return ret_val;
         }
 
         /// <inheritdoc />
         public override Dictionary<Tuple<PointType, ushort>, ushort> ParseResponse(byte[] response)
         {
-            Dictionary<Tuple<PointType, ushort>, ushort> r = new Dictionary<Tuple<PointType, ushort>, ushort>();
+            Dictionary<Tuple<PointType, ushort>, ushort> ret_val = new Dictionary<Tuple<PointType, ushort>, ushort>();
 
-            if (response[7] != CommandParameters.FunctionCode + 0x80)
-            {
-                var address = BitConverter.ToUInt16(response, 8);
-                var value = BitConverter.ToUInt16(response, 10);
+            byte regAddres1 = response[8];
+            byte regAddres2 = response[9];
 
-                address = (ushort)IPAddress.NetworkToHostOrder((short)address);
-                value = (ushort)IPAddress.HostToNetworkOrder((short)value);
+            byte val1 = response[10];
+            byte val2 = response[11];
 
-                r.Add(new Tuple<PointType, ushort>(PointType.DIGITAL_OUTPUT, address), value);
-            }
-            else
-            {
-                HandeException(response[8]);
-            }
-
-            return r;
+            ushort adress = (ushort)((ushort)(regAddres1 << 8) + regAddres2);
+            ushort value = (ushort)((ushort)(val1 << 8) + val2);
+            Tuple<PointType, ushort> index = Tuple.Create(PointType.ANALOG_OUTPUT, adress);
+            ret_val.Add(index, value);
+            return ret_val;
         }
     }
 }
